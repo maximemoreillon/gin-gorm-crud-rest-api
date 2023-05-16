@@ -15,11 +15,15 @@ func main() {
 
 	userController := new(controllers.ProductController)
 
-	r.POST("/products", userController.Create)
-  r.GET("/products", userController.ReadAll)
-	r.GET("/products/:id", userController.ReadOne)
-	r.PUT("/products/:id", userController.Update)
-	r.DELETE("/products/:id", userController.Delete)
+	productsRoute := r.Group("/products")
+	{
+		productsRoute.POST("/", userController.Create)
+		productsRoute.GET("/", userController.ReadAll)
+		productsRoute.GET("/:id", userController.ReadOne)
+		productsRoute.PUT("/:id", userController.Update)
+		productsRoute.DELETE("/:id", userController.Delete)
+	}
+
   
 	r.Run() 
 }
