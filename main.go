@@ -28,6 +28,8 @@ func main() {
 
 	r.POST("/products", func(c *gin.Context) {
 
+		// TODO: use request body
+
 		db.Create(&Product{Code: "D42", Price: 100})
 
 		c.JSON(http.StatusOK, gin.H{
@@ -49,6 +51,8 @@ func main() {
     })
 
   })
+
+	// TODO: Update
 
 	r.DELETE("/products/:id", func(c *gin.Context) {
 
