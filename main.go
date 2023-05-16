@@ -12,8 +12,10 @@ import (
 type Product struct {
   gorm.Model
   Code  string
-  Price uint
+  Price int
 }
+
+
 
 func main() {
   db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
@@ -28,9 +30,13 @@ func main() {
 
 	r.POST("/products", func(c *gin.Context) {
 
-		// TODO: use request body
+		var newProduct Product
+		if err := c.ShouldBindJSON(&newProduct); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 
-		db.Create(&Product{Code: "D42", Price: 100})
+		db.Create(&Product{Code: newProduct.Code, Price: newProduct.Price})
 
 		c.JSON(http.StatusOK, gin.H{
       "status": "OK",
@@ -45,14 +51,52 @@ func main() {
 
 		db.Find(&products)
 
-
     c.JSON(http.StatusOK, gin.H{
       "items": products,
     })
 
   })
 
-	// TODO: Update
+	r.GET("/products/:id", func(c *gin.Context) {
+
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			fmt.Println("Error during conversion")
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		var product Product
+		db.First(&product, id)
+
+    c.JSON(http.StatusOK, gin.H{
+      "item": product,
+    })
+
+  })
+
+	r.PUT("/products/:id", func(c *gin.Context) {
+
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			fmt.Println("Error during conversion")
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		var newProperties Product
+		if err := c.ShouldBindJSON(&newProperties); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		var product Product
+		db.First(&product, id)
+		db.Model(&product).Updates(Product{Price: newProperties.Price, Code: newProperties.Code}) // non-zero fields
+
+		c.JSON(http.StatusOK, gin.H{"code": newProperties.Code, "price": newProperties.Price})
+
+  })
 
 	r.DELETE("/products/:id", func(c *gin.Context) {
 
@@ -61,7 +105,8 @@ func main() {
 
 		if err != nil {
 			fmt.Println("Error during conversion")
-			// TODO: error code and return
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
 		}
 
 		db.Delete(&product, id)
