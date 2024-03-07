@@ -15,11 +15,13 @@ type ProductController struct{}
 func (p ProductController) Create(c *gin.Context) {
 
 	var newProduct models.Product
-	if err := c.ShouldBindJSON(&newProduct); err != nil {
+
+	err := c.ShouldBindJSON(&newProduct); 
+	
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 
 	db.GetDB().Create(&models.Product{Code: newProduct.Code, Price: newProduct.Price})
 
@@ -44,6 +46,7 @@ func (p ProductController) ReadAll(c *gin.Context) {
 func (p ProductController) ReadOne(c *gin.Context) {
 
 	id, err := strconv.Atoi(c.Param("id"))
+
 	if err != nil {
 		fmt.Println("Error during conversion")
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
